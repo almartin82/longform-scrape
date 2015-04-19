@@ -2,12 +2,15 @@ import requests
 import pandas
 import csv
 import time
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 
 
 def parse_article(requests_content, i):
-    """parse a longform.org article"""
+    """parses a longform.org article for date/author/publication etc"""
     soup = BeautifulSoup(requests_content)
+    #posted_at is outside the article div
+    posted_at = soup.find("div", attrs={'class': 'posted_at'}).text
+    #grab the article div and extract relevant data
     article = soup.find("div", attrs={'class': 'content'})
     title = article.find("h2").text
     author = article.find("span", attrs={'class': 'byline'}).text
@@ -17,10 +20,11 @@ def parse_article(requests_content, i):
     parsed = pandas.DataFrame({
         'title': title,
         'author': author,
+        'posted_at': posted_at.replace('Posted on ', ''),
         'pub_date': pub_date,
         'publication': pub_name,
         'summary': summary
-    }, index = [i])
+    }, index=[i])
     return parsed
 
 #df to hold the articles
@@ -29,8 +33,8 @@ df = pandas.DataFrame()
 start = 1
 limit = 8227
 #testing only
-# start = 8000
-# limit = 8010
+#start = 8000
+#limit = 8010
 
 for i in range(start, limit):
     url = 'http://longform.org/posts/' + str(i)
@@ -39,12 +43,12 @@ for i in range(start, limit):
     if r.status_code == 200:
         try:
             parsed = parse_article(r.content, i)
+            df = df.append(parsed)
         except:
             print 'failed: ' + url
             pass
-        df = df.append(parsed)
 
     #don't hammer them
-    time.sleep(0.5)
+    time.sleep(0.2)
 
 df.to_csv('longform_sources.csv', sep=',', quoating=csv.QUOTE_ALL, encoding='utf-8')
