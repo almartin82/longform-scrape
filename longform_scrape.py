@@ -16,14 +16,14 @@ def parse_article(requests_content, i):
     author = article.find("span", attrs={'class': 'byline'}).text
     pub_date = article.find("span", attrs={'class': 'publication_date'}).text
     pub_name = article.find("span", attrs={'class': 'publication'}).text
-    summary = article.find("div", attrs={'class': 'body'}).text
+    article_summary = article.find("div", attrs={'class': 'body'}).text
     parsed = pandas.DataFrame({
-        'title': title,
         'author': author,
         'posted_at': posted_at.replace('Posted on ', ''),
+        'pub': pub_name,
         'pub_date': pub_date,
-        'publication': pub_name,
-        'summary': summary
+        'summary': article_summary.replace('\n', ''),
+        'title': title,
     }, index=[i])
     return parsed
 
@@ -49,6 +49,6 @@ for i in range(start, limit):
             pass
 
     #don't hammer them
-    time.sleep(0.2)
+    time.sleep(0.1)
 
 df.to_csv('longform_sources.csv', sep=',', quoating=csv.QUOTE_ALL, encoding='utf-8')
