@@ -20,7 +20,7 @@ def parse_article(requests_content, i):
     parsed = pandas.DataFrame({
         'author': author,
         'posted_at': posted_at.replace('Posted on ', ''),
-        'pub': pub_name,
+        'publication': pub_name,
         'pub_date': pub_date,
         'summary': article_summary.replace('\n', ''),
         'title': title,
@@ -49,6 +49,6 @@ for i in range(start, limit):
             pass
 
     #don't hammer them
-    time.sleep(0.1)
+    time.sleep(1)
 
 df.to_csv('longform_sources.csv', sep=',', quoating=csv.QUOTE_ALL, encoding='utf-8')
